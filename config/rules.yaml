@@ -1,0 +1,379 @@
+# Code Scanner Rules Configuration
+# 规则配置文件 - 定义安全检测规则
+
+# 凭证泄露检测规则
+secrets:
+  enabled: true
+  severity: CRITICAL
+  rules:
+    - id: SEC001
+      name: AWS Access Key ID
+      pattern: "AKIA[0-9A-Z]{16}"
+      confidence: 95
+      description: "检测到 AWS Access Key ID"
+      
+    - id: SEC002
+      name: AWS Secret Access Key
+      pattern: "(?i)(aws_access_key_id|aws_secret_access_key)\\s*=\\s*[\"']?[a-zA-Z0-9/+=]{20,}"
+      confidence: 90
+      description: "检测到 AWS 凭证"
+      
+    - id: SEC003
+      name: Private Key
+      pattern: "-----BEGIN (RSA |DSA |EC |OPENSSH )?PRIVATE KEY-----"
+      confidence: 95
+      description: "检测到私钥"
+      
+    - id: SEC004
+      name: API Key/Secret
+      pattern: "(?i)(api_key|apikey|secret_key|secretkey|access_token|auth_token)\\s*[=:]\\s*[\"'][a-zA-Z0-9_-]{20,}[\"']"
+      confidence: 85
+      description: "检测到 API 密钥"
+      
+    - id: SEC005
+      name: OpenAI API Key
+      pattern: "sk-[a-zA-Z0-9]{20,}"
+      confidence: 90
+      description: "检测到 OpenAI API 密钥"
+      
+    - id: SEC006
+      name: GitHub Personal Access Token
+      pattern: "ghp_[a-zA-Z0-9]{36}"
+      confidence: 95
+      description: "检测到 GitHub Personal Access Token"
+      
+    - id: SEC007
+      name: GitHub OAuth Token
+      pattern: "gho_[a-zA-Z0-9]{36}"
+      confidence: 95
+      description: "检测到 GitHub OAuth Token"
+      
+    - id: SEC008
+      name: GitHub Fine-grained PAT
+      pattern: "github_pat_[a-zA-Z0-9]{22}_[a-zA-Z0-9]{59}"
+      confidence: 95
+      description: "检测到 GitHub Fine-grained PAT"
+      
+    - id: SEC009
+      name: Slack Token
+      pattern: "xox[baprs]-[a-zA-Z0-9-]{10,}"
+      confidence: 90
+      description: "检测到 Slack Token"
+      
+    - id: SEC010
+      name: Hardcoded Password
+      pattern: "(?i)password\\s*[=:]\\s*[\"'][^\"']{8,}[\"']"
+      confidence: 80
+      description: "检测到硬编码密码"
+
+# 代码执行/注入检测规则
+injection:
+  enabled: true
+  severity: HIGH
+  rules:
+    - id: INJ001
+      name: eval() with non-literal
+      pattern: "\\beval\\s*\\(\\s*[^\"'`\"]"
+      confidence: 85
+      description: "eval() 使用非字面量参数"
+      
+    - id: INJ002
+      name: exec() with non-literal
+      pattern: "(?<!\\.)exec\\s*\\(\\s*[^\"'`\"]"
+      confidence: 85
+      description: "exec() 使用非字面量参数"
+      
+    - id: INJ003
+      name: Dynamic Import
+      pattern: "__import__\\s*\\("
+      confidence: 75
+      description: "使用 __import__ 动态导入"
+      
+    - id: INJ004
+      name: os.system() call
+      pattern: "\\bos\\.system\\s*\\("
+      confidence: 80
+      description: "调用 os.system()"
+      
+    - id: INJ005
+      name: os.popen() call
+      pattern: "\\bos\\.popen\\s*\\("
+      confidence: 80
+      description: "调用 os.popen()"
+      
+    - id: INJ006
+      name: subprocess shell=True
+      pattern: "\\bsubprocess\\.(call|run|Popen)\\s*\\([^)]*shell\\s*=\\s*True"
+      confidence: 75
+      description: "subprocess 使用 shell=True"
+
+# 下载执行检测规则
+download_exec:
+  enabled: true
+  severity: CRITICAL
+  rules:
+    - id: DEX001
+      name: curl pipe to shell
+      pattern: "curl\\s+.*\\|\\s*(ba)?sh"
+      confidence: 95
+      description: "curl 管道到 shell"
+      
+    - id: DEX002
+      name: wget pipe to shell
+      pattern: "wget\\s+.*\\|\\s*(ba)?sh"
+      confidence: 95
+      description: "wget 管道到 shell"
+      
+    - id: DEX003
+      name: curl download then execute
+      pattern: "curl\\s+.*-o\\s+\\S+.*&&\\s*(ba)?sh"
+      confidence: 90
+      description: "curl 下载后执行"
+      
+    - id: DEX004
+      name: wget download then execute
+      pattern: "wget\\s+.*-O\\s+\\S+.*&&\\s*(ba)?sh"
+      confidence: 90
+      description: "wget 下载后执行"
+      
+    - id: DEX005
+      name: curl pipe to python
+      pattern: "curl\\s+.*\\|\\s*python"
+      confidence: 90
+      description: "curl 管道到 python"
+
+# 凭证盗取检测规则
+credential_theft:
+  enabled: true
+  severity: CRITICAL
+  rules:
+    - id: CTF001
+      name: macOS password dialog
+      pattern: "osascript.*display\\s+dialog.*password"
+      confidence: 95
+      description: "macOS 密码对话框"
+      
+    - id: CTF002
+      name: macOS Keychain extraction
+      pattern: "security\\s+find-(generic|internet)-password"
+      confidence: 90
+      description: "macOS Keychain 密码提取"
+      
+    - id: CTF003
+      name: SSH private key reading
+      pattern: "cat\\s+.*\\.ssh/(id_rsa|id_ed25519|id_ecdsa)"
+      confidence: 90
+      description: "读取 SSH 私钥"
+      
+    - id: CTF004
+      name: AWS credentials file access
+      pattern: "\\.aws/credentials"
+      confidence: 85
+      description: "访问 AWS 凭证文件"
+      
+    - id: CTF005
+      name: Browser credential access
+      pattern: "Cookies/Cookies\\.binarycookies|Login\\s*Data|cookies\\.sqlite"
+      confidence: 90
+      description: "访问浏览器凭证/Cookie"
+
+# 持久化检测规则
+persistence:
+  enabled: true
+  severity: HIGH
+  rules:
+    - id: PER001
+      name: crontab modification
+      pattern: "crontab\\s+(-[el]|-)"
+      confidence: 70
+      description: "crontab 修改"
+      
+    - id: PER002
+      name: cron job installation
+      pattern: "(>>|>)\\s*.*crontab|cron\\.d/"
+      confidence: 75
+      description: "cron 任务安装"
+      
+    - id: PER003
+      name: macOS launchd persistence
+      pattern: "LaunchAgents|LaunchDaemons|\\.plist"
+      confidence: 65
+      description: "macOS launchd 持久化"
+      
+    - id: PER004
+      name: launchctl loading
+      pattern: "launchctl\\s+(load|bootstrap)"
+      confidence: 80
+      description: "launchctl 加载"
+      
+    - id: PER005
+      name: systemd service enablement
+      pattern: "systemctl\\s+(enable|start)"
+      confidence: 60
+      description: "systemd 服务启用"
+      
+    - id: PER006
+      name: Windows registry run key
+      pattern: "HKEY_.*\\\\Run|CurrentVersion\\\\Run"
+      confidence: 80
+      description: "Windows 注册表启动项"
+      
+    - id: PER007
+      name: Shell profile modification
+      pattern: "(>>|>)\\s*.*(\\.(bashrc|zshrc|profile|bash_profile))"
+      confidence: 75
+      description: "修改 Shell 配置文件"
+
+# 混淆代码检测规则
+obfuscation:
+  enabled: true
+  severity: HIGH
+  rules:
+    - id: OBF001
+      name: Hex-encoded string
+      pattern: "\\\\x[0-9a-fA-F]{2}(\\\\x[0-9a-fA-F]{2}){5,}"
+      confidence: 70
+      description: "十六进制编码字符串"
+      
+    - id: OBF002
+      name: chr() chain
+      pattern: "chr\\s*\\(\\s*\\d+\\s*\\)\\s*\\+\\s*chr\\s*\\(\\s*\\d+\\s*\\)(\\s*\\+\\s*chr\\s*\\(\\s*\\d+\\s*\\)){3,}"
+      confidence: 85
+      description: "chr() 链式拼接"
+      
+    - id: OBF003
+      name: String reversal
+      pattern: "\\[::\\s*-1\\s*\\]"
+      confidence: 45
+      description: "字符串反转"
+      
+    - id: OBF004
+      name: String.fromCharCode
+      pattern: "String\\.fromCharCode\\s*\\(.*,.*,.*,.*\\)"
+      confidence: 70
+      description: "JavaScript String.fromCharCode"
+
+# 网络访问检测规则
+network:
+  enabled: true
+  severity: MEDIUM
+  rules:
+    - id: NET001
+      name: Python socket
+      pattern: "\\bsocket\\.(socket|connect|create_connection)\\b"
+      confidence: 50
+      description: "Python socket 使用"
+      
+    - id: NET002
+      name: Python urllib
+      pattern: "\\burllib\\.request\\.(urlopen|Request)\\b"
+      confidence: 40
+      description: "Python urllib 使用"
+      
+    - id: NET003
+      name: Python requests
+      pattern: "\\brequests\\.(get|post|put|delete|patch|head)\\s*\\("
+      confidence: 35
+      description: "Python requests 库"
+      
+    - id: NET004
+      name: JavaScript fetch
+      pattern: "\\bfetch\\s*\\(\\s*[\"']https?://"
+      confidence: 35
+      description: "JavaScript fetch() 调用"
+      
+    - id: NET005
+      name: curl command
+      pattern: "\\bcurl\\s+-"
+      confidence: 45
+      description: "curl 命令调用"
+      
+    - id: NET006
+      name: wget command
+      pattern: "\\bwget\\s+"
+      confidence: 45
+      description: "wget 命令调用"
+
+# 权限提升检测规则
+privilege_escalation:
+  enabled: true
+  severity: HIGH
+  rules:
+    - id: PRI001
+      name: sudo invocation
+      pattern: "\\bsudo\\s+"
+      confidence: 65
+      description: "sudo 调用"
+      
+    - id: PRI002
+      name: chmod 777
+      pattern: "chmod\\s+777\\b"
+      confidence: 80
+      description: "chmod 777 世界可写"
+      
+    - id: PRI003
+      name: chmod setuid
+      pattern: "chmod\\s+\\+s\\b"
+      confidence: 85
+      description: "chmod +s setuid"
+      
+    - id: PRI004
+      name: Python setuid/setgid
+      pattern: "\\bos\\.setuid\\s*\\(|os\\.setgid\\s*\\("
+      confidence: 85
+      description: "Python setuid/setgid 调用"
+      
+    - id: PRI005
+      name: macOS admin modification
+      pattern: "dscl\\s+\\.\\s+-append\\s+/Groups/admin"
+      confidence: 90
+      description: "macOS 管理员组修改"
+
+# 供应链攻击检测规则
+supply_chain:
+  enabled: true
+  severity: HIGH
+  rules:
+    - id: SUP001
+      name: npm postinstall hook
+      pattern: "postinstall"
+      confidence: 60
+      file_pattern: "package.json"
+      description: "npm postinstall 钩子"
+      
+    - id: SUP002
+      name: npm preinstall hook
+      pattern: "preinstall"
+      confidence: 60
+      file_pattern: "package.json"
+      description: "npm preinstall 钩子"
+      
+    - id: SUP003
+      name: Python setup.py cmdclass
+      pattern: "cmdclass\\s*="
+      confidence: 55
+      file_pattern: "setup.py"
+      description: "Python setup.py 自定义命令类"
+
+# 社会工程学检测规则
+social_engineering:
+  enabled: true
+  severity: LOW
+  rules:
+    - id: SOC001
+      name: Crypto wallet keywords
+      pattern: "(crypto[_-]?wallet|airdrop|free[_-]?token|wallet[_-]?connect|seed[_-]?phrase)"
+      confidence: 35
+      description: "加密钱包相关关键词"
+      
+    - id: SOC002
+      name: Security update spoofing
+      pattern: "(security[_-]?update|urgent[_-]?fix)"
+      confidence: 40
+      description: "安全更新伪装"
+      
+    - id: SOC003
+      name: Reward/claim keywords
+      pattern: "(claim[_-]?reward|bonus[_-]?token|metamask[_-]?fix)"
+      confidence: 35
+      description: "奖励/领取相关关键词"

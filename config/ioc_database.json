@@ -1,0 +1,32 @@
+{
+  "_description": "IOC威胁情报数据库 - 已知恶意IP、域名、URL模式和文件哈希",
+  "_last_updated": "2025-03-25",
+  "_source": "基于开源威胁情报和社区贡献",
+  
+  "malicious_ips": [
+    {"ip": "192.0.2.1", "description": "示例恶意IP", "confidence": 95},
+    {"ip": "198.51.100.0/24", "description": "恶意C2服务器段", "confidence": 90},
+    {"ip": "203.0.113.50", "description": "钓鱼服务器", "confidence": 95}
+  ],
+  
+  "malicious_domains": [
+    {"domain": "evil.com", "description": "已知恶意域名", "confidence": 95},
+    {"domain": "malware-c2.net", "description": "恶意软件C2", "confidence": 90},
+    {"domain": "phishing-example.org", "description": "钓鱼域名", "confidence": 95},
+    {"domain": "suspicious-cdn.xyz", "description": "可疑CDN", "confidence": 85}
+  ],
+  
+  "malicious_url_patterns": [
+    {"pattern": "https?://[^/]+/malware/.*", "description": "恶意软件分发URL", "confidence": 90},
+    {"pattern": "https?://[^/]+/payload/.*", "description": "载荷分发URL", "confidence": 85},
+    {"pattern": "https?://[^/]+/dropper/.*", "description": "Dropper分发URL", "confidence": 85}
+  ],
+  
+  "malicious_hashes": [
+    {"sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "description": "示例恶意文件", "confidence": 95}
+  ],
+  
+  "suspicious_tlds": [
+    ".tk", ".ml", ".ga", ".cf", ".gq"
+  ]
+}

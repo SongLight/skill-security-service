@@ -1,0 +1,5 @@
+# Python dependencies with known vulnerabilities
+requests==2.25.0
+python3-dateutil==2.8.0
+flask==0.12.0
+django==1.11.0

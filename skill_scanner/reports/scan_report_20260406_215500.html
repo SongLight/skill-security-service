@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Scanner - Skills安全扫描报告</title>
+    <style>
+        :root {
+            --critical: #991b1b;
+            --high: #9a3412;
+            --medium: #854d0e;
+            --low: #166534;
+            --safe: #14532d;
+            --bg: #1a1a1a;
+            --card: #242424;
+            --text: #e5e5e5;
+            --text-muted: #888888;
+            --border: #333333;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .meta {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        /* Header 图例说明 */
+        .header-legend {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border);
+            font-size: 13px;
+        }
+        
+        .header-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #888888;
+        }
+        
+        .header-legend-icon {
+            font-size: 14px;
+        }
+        
+        .header-legend-code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: #1a1a1a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #333333;
+            font-size: 11px;
+            color: #d4d4d4;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value.critical { color: var(--critical); }
+        .stat-value.high { color: var(--high); }
+        .stat-value.medium { color: var(--medium); }
+        .stat-value.low { color: var(--low); }
+        
+        /* 总问题数卡片样式 - 深灰色 */
+        .stat-card.total {
+            background: linear-gradient(135deg, #3a3a3a 0%, #2d2d2d 100%);
+            color: #e5e5e5;
+        }
+        
+        .stat-card.total .stat-value {
+            color: #e5e5e5;
+        }
+        
+        .stat-card.total .stat-label {
+            color: #888888;
+        }
+        
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        
+        .findings-section {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .findings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .filter-btn {
+            padding: 6px 16px;
+            border: 1px solid var(--border);
+            background: #333333;
+            color: var(--text);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .filter-btn:hover {
+            background: #444444;
+        }
+        
+        .filter-btn.active {
+            background: #555555;
+            color: white;
+        }
+        
+        /* Skill Section Styles */
+        .skill-section {
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .skill-header {
+            background: linear-gradient(135deg, #333333 0%, #2a2a2a 100%);
+            color: #e5e5e5;
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .skill-header:hover {
+            background: linear-gradient(135deg, #3a3a3a 0%, #323232 100%);
+        }
+        
+        .skill-name {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .skill-stats {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .skill-count {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        
+        .skill-sev-summary {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        
+        .sev-item {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        .sev-name {
+            opacity: 0.9;
+        }
+        
+        .sev-num {
+            font-weight: 700;
+            opacity: 1;
+        }
+        
+        .sev-dot {
+            opacity: 0.5;
+            margin: 0 4px;
+        }
+        
+        .skill-toggle {
+            font-size: 20px;
+            transition: transform 0.3s;
+        }
+        
+        .skill-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+        
+        .skill-content {
+            padding: 20px;
+            background: var(--bg);
+        }
+        
+        .skill-content.collapsed {
+            display: none;
+        }
+        
+        .finding-item {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.2s;
+        }
+        
+        .finding-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .finding-item.critical { border-left: 4px solid var(--critical); }
+        .finding-item.high { border-left: 4px solid var(--high); }
+        .finding-item.medium { border-left: 4px solid var(--medium); }
+        .finding-item.low { border-left: 4px solid var(--low); }
+        
+        /* 安全 Skill 消息 - 深色主题 */
+        .safe-message {
+            text-align: center;
+            padding: 30px;
+            color: #22c55e;
+        }
+        
+        .safe-icon {
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+        
+        .safe-text {
+            font-size: 14px;
+            color: #888888;
+        }
+        
+        /* 发现项样式 */
+        .finding-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        
+        .finding-num {
+            color: var(--text-muted);
+            font-size: 13px;
+            min-width: 30px;
+        }
+        
+        .finding-title {
+            font-weight: 600;
+            font-size: 15px;
+            flex: 1;
+        }
+        
+        .severity-badge {
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .severity-badge.critical { background: #fee2e2; color: var(--critical); }
+        .severity-badge.high { background: #ffedd5; color: var(--high); }
+        .severity-badge.medium { background: #fef9c3; color: var(--medium); }
+        .severity-badge.low { background: #dcfce7; color: var(--low); }
+        
+        .finding-location {
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-bottom: 8px;
+            padding-left: 40px;
+        }
+        
+        .finding-desc {
+            font-size: 14px;
+            color: var(--text);
+            line-height: 1.5;
+            padding-left: 40px;
+        }
+        
+        .finding-description {
+            margin-bottom: 10px;
+        }
+        
+        /* 美观的发现项卡片样式 */
+        .finding-card {
+            background: var(--card);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .finding-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #2a2a2a 0%, #323232 100%);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .finding-badge {
+            width: 26px;
+            height: 26px;
+            background: #444444;
+            color: #e5e5e5;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        
+        .finding-detector {
+            flex: 1;
+            font-weight: 600;
+            font-size: 15px;
+            color: #e5e5e5;
+        }
+        
+        .finding-level {
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .finding-level.critical { background: #3d1f1f; color: #ef4444; }
+        .finding-level.high { background: #3d2416; color: #f97316; }
+        .finding-level.medium { background: #3d3116; color: #eab308; }
+        .finding-level.low { background: #163d25; color: #22c55e; }
+        
+        .finding-card-body {
+            padding: 16px;
+        }
+        
+        .info-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .info-icon {
+            flex-shrink: 0;
+            font-size: 14px;
+            margin-top: 2px;
+        }
+        
+        .info-text {
+            color: var(--text);
+            word-break: break-all;
+            line-height: 1.5;
+        }
+        
+        .code-box {
+            background: #1a1a1a;
+            color: #d4d4d4;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin-top: 10px;
+            margin-left: 24px;
+            border: 1px solid #333333;
+        }
+        
+        .code-block {
+            background: #1a1a1a;
+            color: #d4d4d4;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            flex: 1;
+            border: 1px solid #333333;
+        }
+        
+        .code-snippet {
+            background: #1a1a1a;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+        
+        .confidence-bar {
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--low), var(--medium), var(--high));
+            border-radius: 2px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+        
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔒 Code Scanner 安全扫描报告</h1>
+            <p class="meta">
+                扫描时间: 2026-04-06T21:55:00.677965 | 
+                扫描器: Code Scanner v1.0.0 | 
+                Skills: 0 个 | 
+                文件: 0 个
+            </p>
+        </header>
+        
+        <div class="stats-grid">
+            
+        <div class="stat-card total">
+            <div class="stat-value">0</div>
+            <div class="stat-label">总问题数</div>
+        </div>
+        
+
+            <div class="stat-card">
+                <div class="stat-value critical">0</div>
+                <div class="stat-label">严重</div>
+            </div>
+            
+
+            <div class="stat-card">
+                <div class="stat-value high">0</div>
+                <div class="stat-label">高危</div>
+            </div>
+            
+
+            <div class="stat-card">
+                <div class="stat-value medium">0</div>
+                <div class="stat-label">中危</div>
+            </div>
+            
+
+            <div class="stat-card">
+                <div class="stat-value low">0</div>
+                <div class="stat-label">低危</div>
+            </div>
+            
+        </div>
+        
+        <div class="findings-section">
+            <div class="findings-header">
+                <h2>Skills风险扫描结果</h2>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" onclick="filterFindings('all')">全部</button>
+                    <button class="filter-btn" onclick="filterFindings('CRITICAL')">严重</button>
+                    <button class="filter-btn" onclick="filterFindings('HIGH')">高危</button>
+                    <button class="filter-btn" onclick="filterFindings('MEDIUM')">中危</button>
+                    <button class="filter-btn" onclick="filterFindings('LOW')">低危</button>
+                </div>
+            </div>
+            
+            <div id="findings-list">
+                
+            <div class="empty-state">
+                <div class="empty-state-icon">✅</div>
+                <h3>未发现安全问题</h3>
+                <p>本次扫描未发现任何安全威胁</p>
+            </div>
+            
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function filterFindings(severity) {
+            const items = document.querySelectorAll('.finding-item');
+            const buttons = document.querySelectorAll('.filter-btn');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            items.forEach(item => {
+                if (severity === 'all' || item.dataset.severity === severity) {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+        }
+        
+        function toggleSkill(skillId) {
+            const content = document.getElementById('skill-content-' + skillId);
+            const toggle = document.getElementById('skill-toggle-' + skillId);
+            
+            if (content.classList.contains('collapsed')) {
+                content.classList.remove('collapsed');
+                toggle.classList.remove('collapsed');
+            } else {
+                content.classList.add('collapsed');
+                toggle.classList.add('collapsed');
+            }
+        }
+    </script>
+</body>
+</html>

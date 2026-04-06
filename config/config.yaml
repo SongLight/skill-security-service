@@ -1,0 +1,164 @@
+# Skill Security Scanner Configuration
+# Copy this file to config/config.yaml and customize as needed
+
+scanner:
+  # Enable threat intelligence detection
+  use_ioc: false
+  
+  # Enable AST behavioral analysis
+  use_behavioral: false
+  
+  # Enable LLM semantic analysis
+  use_llm: false
+  
+  # Enable YARA pattern matching
+  use_yara: false
+  
+  # Enable dependency chain scanning
+  use_dependency: false
+  
+  # Enable permission analysis
+  use_permission_analysis: false
+  
+  # OSV API settings
+  dep_enable_osv: true
+  
+  # License compliance checking
+  dep_enable_license: false
+  
+  # Project license for compatibility checking
+  dep_project_license: MIT
+  
+  # Maximum file size to scan (MB)
+  max_file_size_mb: 10
+  
+  # Maximum files per scan
+  max_files_per_scan: 1000
+  
+  # Enable caching for faster scans
+  enable_caching: true
+  
+  # Number of parallel workers
+  parallel_workers: 4
+  
+  # Default output format
+  default_format: text
+  
+  # Default output directory
+  output_dir: ./output
+  
+  # Verbose mode
+  verbose: false
+
+detector:
+  # Minimum entropy for secret detection
+  secrets_min_entropy: 4.5
+  
+  # Secrets patterns file
+  secrets_patterns_file: config/secrets_patterns.yaml
+  
+  # IOC database file
+  ioc_database_file: config/ioc_database.json
+  
+  # IOC database update interval (seconds)
+  ioc_check_interval: 86400
+  
+  # Strict mode for permission analysis
+  permission_strict_mode: true
+  
+  # Auto-approved permission patterns
+  permission_auto_approve: []
+  
+  # YARA rules directory
+  yara_rules_dir: config/yara_rules
+  
+  # Maximum YARA file size (MB)
+  yara_max_file_size: 5
+  
+  # LLM settings
+  llm_enabled: false
+  llm_provider: openai
+  llm_api_key: ''
+  llm_api_base: https://api.openai.com/v1
+  llm_model: gpt-4o-mini
+  llm_timeout: 30
+  llm_max_tokens: 1000
+  llm_temperature: 0.1
+  llm_max_content_length: 4000
+  
+  # Available LLM providers
+  llm_enabled_providers:
+    - openai
+    - anthropic
+    - ollama
+
+logging:
+  # Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  level: INFO
+  
+  # Log format
+  format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  
+  # Date format
+  date_format: '%Y-%m-%d %H:%M:%S'
+  
+  # Enable logging
+  enabled: true
+  
+  # Log file path
+  file_path: logs/scanner.log
+  
+  # Maximum log file size (MB)
+  max_size_mb: 10
+  
+  # Number of backup files
+  backup_count: 5
+  
+  # Enable console output
+  console_enabled: true
+  
+  # Enable colored console output
+  console_color: true
+  
+  # Enable log rotation
+  rotation_enabled: true
+  
+  # Rotation time: midnight, H, D, W0-W6
+  rotation_when: midnight
+  
+  # Rotation interval
+  rotation_interval: 1
+
+performance:
+  # Enable caching
+  cache_enabled: true
+  
+  # Cache TTL (seconds)
+  cache_ttl_seconds: 3600
+  
+  # Maximum cache size
+  cache_max_size: 1000
+  
+  # Precompile regex patterns
+  regex_precompile: true
+  
+  # Regex cache size
+  regex_cache_size: 512
+  
+  # Use memory mapping for large files
+  use_mmap: false
+  
+  # Chunk size for file reading (KB)
+  chunk_size_kb: 64
+  
+  # Enable multiprocessing
+  enable_multiprocessing: false
+  
+  # Process pool size (null = auto)
+  process_pool_size: null
+  
+  # Use SQLite cache
+  use_sqlite_cache: true
+  
+  # SQLite cache file
+  sqlite_cache_file: .scanner_cache.db

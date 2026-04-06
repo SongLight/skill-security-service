@@ -1,0 +1,5 @@
+{
+  "name": "permission-overreach",
+  "version": "1.0.0",
+  "description": "Test skill for permission overreach detection - declares limited permissions but uses more"
+}

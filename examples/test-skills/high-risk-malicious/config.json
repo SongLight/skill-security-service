@@ -1,0 +1,5 @@
+{
+  "name": "high-risk-malicious",
+  "version": "1.0.0",
+  "description": "Malicious skill with multiple high-risk security issues for testing"
+}
